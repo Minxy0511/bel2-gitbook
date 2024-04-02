@@ -1,22 +1,22 @@
 # Introduction
 
-{% content-ref url="https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/overview" %}
-[Overview](https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/overview)
+{% content-ref url="introduction/overview.md" %}
+[overview.md](introduction/overview.md)
 {% endcontent-ref %}
 
-{% content-ref url="https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/tx-proof-zk-proof-on-bitcoin" %}
-[TX Proof: zk Proof on Bitcoin](https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/tx-proof-zk-proof-on-bitcoin)
+{% content-ref url="introduction/tx-proof-zk-proof-on-bitcoin.md" %}
+[tx-proof-zk-proof-on-bitcoin.md](introduction/tx-proof-zk-proof-on-bitcoin.md)
 {% endcontent-ref %}
 
-{% content-ref url="https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/zk-proof-bitcoin-full-node" %}
-[ZK Proof Bitcoin Full Node](https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/zk-proof-bitcoin-full-node)
+{% content-ref url="introduction/zk-proof-bitcoin-full-node.md" %}
+[zk-proof-bitcoin-full-node.md](introduction/zk-proof-bitcoin-full-node.md)
 {% endcontent-ref %}
 
-{% content-ref url="https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/relayers-network" %}
-[Relayers Network](https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/relayers-network)
+{% content-ref url="introduction/relayers-network.md" %}
+[relayers-network.md](introduction/relayers-network.md)
 {% endcontent-ref %}
 
-{% content-ref url="https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/bel2-structure" %}
-[BeL2 Structure](https://app.gitbook.com/s/8bBU4zbFUwWOznsg4Kmn/introduction/bel2-structure)
+{% content-ref url="introduction/bel2-structure.md" %}
+[bel2-structure.md](introduction/bel2-structure.md)
 {% endcontent-ref %}
 
