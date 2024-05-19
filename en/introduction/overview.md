@@ -1,28 +1,63 @@
 # Overview
 
-BeL2是一种创新的技术方案,其核心是通过构建与比特币共识代码等价的零知识证明(ZKP)电路,为比特币的UTXO状态转换生成一个紧凑且可验证的证明。这个证明可以被传递到任意网络进行验证,从而将比特币的共识安全性扩展到其他环境中。
+BeL2是一个创新的区块链技术开源项目,旨在通过零知识证明(ZKP)技术提升比特币网络的可扩展性、互操作性和安全性。BeL2的核心是构建与比特币共识代码等价的ZKP电路,为比特币的UTXO(未花费交易输出)状态转换生成紧凑且可验证的证明。
 
-在技术原理上,BeL2首先将比特币的共识规则抽象为一个电路,包括区块和交易的验证逻辑、UTXO状态的更新规则等。然后,利用ZKP技术(zk-STARK等)对这个电路进行"零知识压缩",生成一个证明,证明某个新的UTXO状态是按照比特币共识规则从之前的状态推导出来的。通过严格证明这个ZKP电路与原始的比特币共识代码在逻辑上的等价性,BeL2确保了证明的正确性和可靠性。同时,得益于ZKP的零知识性质,证明过程不会泄露关于UTXO状态的任何额外信息。
+BeL2的技术原理是将比特币共识规则抽象为一个电路,包括区块和交易的验证逻辑、UTXO状态的更新规则等。然后,利用ZKP技术(如zk-STARK)对这个电路进行"零知识压缩",生成一个证明,证明某个新的UTXO状态是按照比特币共识规则从之前的状态推导出来的。通过严格证明这个ZKP电路与原始的比特币共识代码在逻辑上的等价性,BeL2确保了证明的正确性和可靠性。同时,得益于ZKP的零知识性质,证明过程不会泄露关于UTXO状态的任何额外信息。
 
-基于这一技术创新,BeL2可以带来多个潜在的应用方向:
+基于这一技术创新,BeL2提供三项基础服务:
 
-1. 轻量级全节点:在同步全节点数据时,节点只需要同步最新的UTXO集合状态及其ZKP证明,而无需下载和验证所有历史区块数据。这大大降低了全节点的存储和带宽需求,使得资源受限的设备也能够运行一个"裁剪版"的比特币全节点。
-2. 双向锚定:对于比特币的二层扩容网络(如闪电网络)和侧链而言,BeL2提供了一种新颖的双向锚定机制。这些网络可以将其关键状态转换的交易提交到比特币主链,再由BeL2生成相应的ZKP证明,写回二层网络。由于ZKP的安全性保证,只要比特币主链是安全的,这个证明就是有效的。这实现了一种双向的互操作,使得二层网络既共享了比特币的算力安全性,其自身的共识也受到了比特币算力的保护。
-3. 可编程的跨链应用:BeL2的ZKP电路是可编程的,可以提取和证明比特币链上的各种状态信息,如余额、时间锁、多签条件等。这为基于智能合约的去中心化应用(DApp)提供了与比特币进行跨链交互的新可能。DApp可以在智能合约中验证BeL2证明,并根据证明内容设计各种跨链业务逻辑和博弈机制,实现对主网BTC的可编程操作。
+### ZKP全节点
+
+在同步全节点数据时,节点只需要同步最新的UTXO集合状态及其ZKP证明,而无需下载和验证所有历史区块数据。这大大降低了全节点的存储和带宽需求,使得资源受限的设备也能够运行一个"裁剪版"的比特币全节点。
+
+除了减少节点的存储空间之外,还可以提供地址余额的零知识证明,可以将地址所持有的UTXO集合和其证明一起提供给需求方,需求方无需使用全节点对其进行验证,只需要验证证明即可信任这些信息。这样可以实现一个无需信任的BTC RPC节点服务。
+
+### 交易证明服务网络
+
+传统BTC交易的验证需要使用全节点或者轻节点,由于需要同步数据而导致其体验不佳,并且依赖网络环境而限制了使用场景。借助BeL2的BTC交易证明,可以生成一个短小的交易证明,方便使用者在各种环境下验证。这个证明即包括其交易信息,也包括它所在的区块的证明,甚至还可以包括已有几次确认的证明。
+
+这个证明还可以被solidity智能合约验证,将BTC的时间戳信息传递到EVM链上,为两者之间进行互操作提供可能。所有需要被验证的交易都通过一个订单合约发布,任何人都可以做零知识证明矿工,通过帮助用户生成证明获得奖励,无需许可即可参与。
+
+### 仲裁网络
+
+基于交易证明,我们可以监督BTC上发生了哪些交易,可以结合智能合约实现挑战机制。如果任何被监督的地址执行了不在预期内的交易签名,其他人可以在合约里发起挑战。如果再增加质押机制,就可以实现一个完整的挑战证明和惩罚机制。通过这种间接的方式,可以实现由代理人协助交易双方完成交易过程,如果代理人作恶,则通过对其进行挑战和惩罚,约束其行为。
+
+BeL2实现了一个仲裁网络,第三方协议通过调用仲裁合约发布签名任务，由指定的仲裁人辅助签名BTC交易，实现帮助第三方协议推进其业务流程。通过质押和挑战机制,仲裁人必须为签名任务进行签名，并且，其只能为签名任务签名，如果仲裁人签署了任何不在签名任务里的交易，其他人可以通过挑战证明机制对其进行惩罚。
+
+
 
 总的来说,BeL2代表了一种将ZKP技术引入比特币生态的重要尝试。它不仅可以显著优化比特币全节点的性能,还为构建更加安全、高效、功能丰富的比特币二层网络、侧链和跨链协议开辟了新的可能性。通过将比特币的共识安全性与ZKP的可验证性和可编程性相结合,BeL2有望成为未来比特币扩容和互操作的一个关键技术基础设施。
 
 
 
-BeL2 is an innovative technical solution that centers on constructing a zero-knowledge proof (ZKP) circuit equivalent to Bitcoin's consensus code, generating a compact and verifiable proof for Bitcoin's UTXO state transitions. This proof can be transmitted to any network for verification, thereby extending Bitcoin's consensus security to other environments.
+BeL2: Bitcoin Consensus Zero-Knowledge Proof Solution
 
-In terms of technical principles, BeL2 first abstracts Bitcoin's consensus rules into a circuit, including the verification logic for blocks and transactions, and the update rules for UTXO states. Then, using ZKP techniques (such as zk-STARK), this circuit is "zero-knowledge compressed" to generate a proof demonstrating that a new UTXO state is derived from the previous state according to Bitcoin's consensus rules. By rigorously proving the logical equivalence between this ZKP circuit and the original Bitcoin consensus code, BeL2 ensures the correctness and reliability of the proof. At the same time, thanks to the zero-knowledge property of ZKP, the proving process does not reveal any additional information about the UTXO state.
+BeL2 is an innovative open-source blockchain technology project that aims to enhance the scalability, interoperability, and security of the Bitcoin network through zero-knowledge proof (ZKP) technology. The core of BeL2 is to construct a ZKP circuit equivalent to the Bitcoin consensus code, generating a compact and verifiable proof for the state transition of Bitcoin's UTXO (unspent transaction output).
 
-Based on this technological innovation, BeL2 can lead to several potential application directions:
+The technical principle of BeL2 is to abstract the Bitcoin consensus rules into a circuit, including the validation logic for blocks and transactions, the update rules for UTXO states, etc. Then, using ZKP technology (such as zk-STARK), this circuit is "zero-knowledge compressed" to generate a proof, proving that a new UTXO state is derived from the previous state according to the Bitcoin consensus rules. By strictly proving the logical equivalence between this ZKP circuit and the original Bitcoin consensus code, BeL2 ensures the correctness and reliability of the proof. At the same time, thanks to the zero-knowledge property of ZKP, the proving process does not reveal any additional information about the UTXO state.
 
-1. Lightweight full nodes: When synchronizing full node data, nodes only need to sync the latest UTXO set state and its ZKP proof, without downloading and verifying all historical block data. This significantly reduces the storage and bandwidth requirements for full nodes, allowing even resource-constrained devices to run a "pruned" version of a Bitcoin full node.
-2. Bi-directional anchoring: For Bitcoin's layer-2 scaling networks (such as the Lightning Network) and sidechains, BeL2 provides a novel bi-directional anchoring mechanism. These networks can submit transactions of their key state transitions to the Bitcoin main chain, and then BeL2 generates corresponding ZKP proofs, which are written back to the layer-2 network. Due to the security guarantees of ZKP, as long as the Bitcoin main chain is secure, the proof is valid. This achieves a bi-directional interoperability, allowing layer-2 networks to share Bitcoin's hash rate security while their own consensus is also protected by Bitcoin's hash rate.
-3. Programmable cross-chain applications: BeL2's ZKP circuits are programmable and can extract and prove various state information on the Bitcoin chain, such as balances, time locks, and multi-signature conditions. This opens up new possibilities for decentralized applications (DApps) based on smart contracts to interact with Bitcoin across chains. DApps can verify BeL2 proofs in smart contracts and design various cross-chain business logic and game mechanisms based on the proof content, realizing programmable operations on mainnet BTC.
+Based on this technological innovation, BeL2 provides three fundamental services:
 
-Overall, BeL2 represents an important attempt to introduce ZKP technology into the Bitcoin ecosystem. It not only significantly optimizes the performance of Bitcoin full nodes but also opens up new possibilities for building more secure, efficient, and feature-rich Bitcoin layer-2 networks, sidechains, and cross-chain protocols. By combining Bitcoin's consensus security with the verifiability and programmability of ZKP, BeL2 is poised to become a key technological infrastructure for future Bitcoin scaling and interoperability.
 
+
+### ZKP Full Node
+
+When synchronizing full node data, nodes only need to synchronize the latest UTXO set state and its ZKP proof, without downloading and verifying all historical block data. This greatly reduces the storage and bandwidth requirements of full nodes, enabling even resource-constrained devices to run a "pruned" version of the Bitcoin full node. In addition to reducing the storage space of nodes, BeL2 can also provide zero-knowledge proofs of address balances. The UTXO set held by an address and its proof can be provided together to the requester, who does not need to use a full node for verification; they only need to verify the proof to trust this information. This enables a trustless BTC RPC node service.
+
+
+
+### Transaction Proof Service Network
+
+The verification of traditional BTC transactions requires the use of full nodes or light nodes, which leads to a poor user experience due to the need for data synchronization and limits usage scenarios due to network environment dependencies. With the help of BeL2's BTC transaction proofs, a short transaction proof can be generated, making it convenient for users to verify in various environments. This proof includes not only the transaction information but also the proof of the block it belongs to and even the proof of the number of confirmations it has received. This proof can also be verified by Solidity smart contracts, passing the BTC timestamp information to the EVM chain, enabling interoperability between the two. All transactions that need to be verified are published through an order contract, and anyone can become a zero-knowledge proof miner, earning rewards by helping users generate proofs without permission.
+
+
+
+### Arbitor Network
+
+Arbiter Network Based on transaction proofs, we can monitor what transactions have occurred on BTC and implement a challenge mechanism combined with smart contracts. If any monitored address executes a transaction signature that is not within expectations, others can initiate a challenge in the contract. If a staking mechanism is added, a complete challenge-proof and punishment mechanism can be realized. Through this indirect approach, transactions can be completed with the assistance of proxies, and if a proxy misbehaves, it can be challenged and punished to constrain its behavior.
+
+BeL2 implements an arbiter network where third-party protocols publish signing tasks by calling the arbiter contract. Designated arbiters assist in signing BTC transactions, helping third-party protocols advance their business processes. Through staking and challenge mechanisms, arbiters must sign the signing tasks, and they can only sign transactions within the signing tasks. If an arbiter signs any transaction that is not included in the signing tasks, others can punish them through the challenge-proof mechanism.
+
+
+
+Overall, BeL2 represents an important attempt to introduce ZKP technology into the Bitcoin ecosystem. It not only significantly optimizes the performance of Bitcoin full nodes but also opens up new possibilities for building more secure, efficient, and feature-rich Bitcoin layer-2 networks, sidechains, and cross-chain protocols. By combining the consensus security of Bitcoin with the verifiability and programmability of ZKP, BeL2 is expected to become a key technical infrastructure for future Bitcoin scaling and interoperability.
