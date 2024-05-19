@@ -4,16 +4,16 @@
 [overview.md](introduction/overview.md)
 {% endcontent-ref %}
 
-{% content-ref url="introduction/tx-proof-zk-proof-on-bitcoin.md" %}
-[tx-proof-zk-proof-on-bitcoin.md](introduction/tx-proof-zk-proof-on-bitcoin.md)
+{% content-ref url="introduction/transaction-proof-service-network.md" %}
+[transaction-proof-service-network.md](introduction/transaction-proof-service-network.md)
 {% endcontent-ref %}
 
 {% content-ref url="introduction/zk-proof-bitcoin-full-node.md" %}
 [zk-proof-bitcoin-full-node.md](introduction/zk-proof-bitcoin-full-node.md)
 {% endcontent-ref %}
 
-{% content-ref url="introduction/relayers-network.md" %}
-[relayers-network.md](introduction/relayers-network.md)
+{% content-ref url="introduction/arbitor-network.md" %}
+[arbitor-network.md](introduction/arbitor-network.md)
 {% endcontent-ref %}
 
 {% content-ref url="introduction/bel2-structure.md" %}

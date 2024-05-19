@@ -1,33 +1,61 @@
 # ZK Proof Bitcoin Full Node
 
-比特币的全节点数据同步是一个耗时且资源密集的过程,需要下载和验证从创始块开始的所有区块数据。每个区块由区块头和区块内容组成,区块内容包含了多笔交易,每笔交易对应着我们在比特币网络上发送的一次转账。
-
-当节点收到新区块的广播时,共识代码需要对其进行反序列化,验证其工作量证明、前驱区块、交易默克尔树以及每笔交易的有效性。为了优化这一过程,我们可以引入"有效UTXO集合"的概念,它表示所有尚未被花费的UTXO的集合。每当一笔交易消耗了某些UTXO,就将它们从集合中移除;每当一笔交易产生了新的UTXO,就将它们加入到集合中。
-
-进一步地,我们可以设计一个类似于比特币共识代码的零知识证明电路。该电路以当前的"有效UTXO集合"和最新区块作为输入,对区块进行解析和验证,并输出更新后的"有效UTXO集合"以及相应的证明。通过反复迭代调用这个电路,我们可以从创始块开始,逐步更新"有效UTXO集合",直到最新的区块高度。这样,我们就得到了当前比特币全网的"有效UTXO集合"及其证明。
-
-基于这一机制,新的比特币全节点无需从头同步所有区块数据,只需下载最新的"有效UTXO集合"及其证明。在验证证明的有效性后,节点可以保留这个集合,并从下一个区块开始同步,每次同步后再更新集合。这种方式可以显著减少数据同步的时间,对于低带宽环境下的全节点而言是一个重大改进。
-
-为了避免数据量过大导致证明生成困难,上述迭代过程可能不以区块为单位,而是以交易为单位进行。同时,"有效UTXO集合"可以采用默克尔树或Verkle树等数据结构来实现,尽量只调整需要修改的部分,而不必重构整个树。MIT提出的UTreeXO技术方案也是一种可能的实现路径。
-
-在这个比特币证明电路的基础上,我们还可以进一步实现Ordinals协议和BRC20协议的证明电路。这样,我们不仅可以为BTC生成"有效UTXO集合",还能为BRC20代币生成账户余额证明。这对于构建去中心化的BRC20索引器具有重要意义。
-
-总的来说,引入零知识证明技术可以显著优化比特币全节点的数据同步过程,降低全节点的存储和带宽需求。通过设计合适的证明电路,我们可以生成关于UTXO状态、Ordinals、BRC20余额等关键信息的紧凑证明,进而支持更加高效、安全、易用的比特币基础设施和应用生态。这种"零知识化"的升级路线有望成为比特币协议未来演进的重要方向之一。
+BeL2最初受到ZeroSync的启发，实现ZK Full Node就是ZeroSync提出的目标，但它止步于区块头的验证。BeL2可以看作是ZeroSync的延续，BeL2使用Cairo(1)，从分析和证明交易的内容开始，再结合区块头的验证，最终实现全链的证明。这样，对于一个BTC Full Node而言，它不必存储高达500G的历史数据，只需要保存有效的UTXO集合，即便分享信息给其它访问者，也可以通过提供零知识证明的方式证明其提供的数据的真实性。这相比于现有的BTC RPC服务来说，是一个巨大的进步，因为它是无需信任的。可以通过证明自证清白。
 
 
 
 
 
-Bitcoin's full node data synchronization is a time-consuming and resource-intensive process that requires downloading and verifying all block data starting from the genesis block. Each block consists of a block header and block content, with the block content containing multiple transactions, each corresponding to a transfer we send on the Bitcoin network.
+### 交易证明
 
-When a node receives a new block broadcast, the consensus code needs to deserialize it and verify its proof-of-work, previous block, transaction Merkle tree, and the validity of each transaction. To optimize this process, we can introduce the concept of a "valid UTXO set," which represents the set of all unspent transaction outputs (UTXOs). Whenever a transaction consumes certain UTXOs, they are removed from the set; whenever a transaction creates new UTXOs, they are added to the set.
+<figure><img src="../.gitbook/assets/IMG_2115.jpeg" alt="" width="375"><figcaption></figcaption></figure>
 
-Furthermore, we can design a zero-knowledge proof circuit similar to the Bitcoin consensus code. This circuit takes the current "valid UTXO set" and the latest block as inputs, parses and validates the block, and outputs an updated "valid UTXO set" along with a corresponding proof. By repeatedly calling this circuit, we can start from the genesis block and gradually update the "valid UTXO set" until the latest block height. This way, we obtain the current "valid UTXO set" of the entire Bitcoin network and its proof.
+交易是BTC写入数据的最小单位，所有的数据都通过交易的方式写在BTC链上。证明一个交易是否有效，以及具体交易内容，需要完成以下几个证明
 
-Based on this mechanism, new Bitcoin full nodes no longer need to synchronize all block data from scratch. Instead, they only need to download the latest "valid UTXO set" and its proof. After verifying the validity of the proof, the node can retain this set and start synchronizing from the next block, updating the set after each synchronization. This approach can significantly reduce the time required for data synchronization, which is a major improvement for full nodes in low-bandwidth environments.
+* 交易本身的有效性验证，以及交易内容的验证
+* 通过验证区块的默克尔树路径证明交易被该默克尔树包含
+* 验证区块头信息证明交易在某个区块内，被这个区块包含
+* 验证区块头在BTC的链上，并有若干个区块的确认
 
-To avoid the difficulty of generating proofs due to large data sizes, the above iteration process may be performed on a per-transaction basis rather than a per-block basis. Additionally, the "valid UTXO set" can be implemented using data structures such as Merkle trees or Verkle trees, which allow for targeted adjustments to the parts that need to be modified without reconstructing the entire tree. The UTreeXO technology proposed by MIT is also a possible implementation path.
 
-On top of this Bitcoin proof circuit, we can further implement proof circuits for the Ordinals protocol and the BRC20 protocol. This way, we can not only generate a "valid UTXO set" for BTC but also generate account balance proofs for BRC20 tokens. This has significant implications for building decentralized BRC20 indexers.
 
-Overall, introducing zero-knowledge proof technology can significantly optimize the data synchronization process for Bitcoin full nodes, reducing storage and bandwidth requirements. By designing appropriate proof circuits, we can generate compact proofs of key information such as UTXO states, Ordinals, and BRC20 balances, thereby supporting more efficient, secure, and user-friendly Bitcoin infrastructure and application ecosystems. This "zero-knowledge" upgrade path is likely to become an important direction for the future evolution of the Bitcoin protocol.
+<figure><img src="../.gitbook/assets/IMG_2114.jpeg" alt="" width="375"><figcaption></figcaption></figure>
+
+BeL2针对每项内容进行验证和证明，再将所有证明递归合并为一个证明，最终通过这个证明可以证实交易的有效性和真实性。
+
+事实上，为了让验证可以更高效率被完成，每个交易又被拆分为多个子电路，这些证明可以被并行执行，最终再汇总在一起。
+
+
+
+### 区块头的证明
+
+
+
+区块头的证明采用类似ZeroSync的机制，将多个区块头合并处理，经过多次批量验证，将所有被验证的区块头汇总为一条前后关联的链式结构，并生成对应的证明。当需要验证任何一个区块时，只要证明在这个链式结构里，即可为其生成一个“链上证明”，并且还可以通过计算其后包含多少个后续区块来得到这个区块已有了几次确认。
+
+<figure><img src="../.gitbook/assets/IMG_2113.jpeg" alt=""><figcaption></figcaption></figure>
+
+针对区块头的验证，包括区块Hash的计算，前后区块关联Hash的验证，前后算力难度值的验证，以及处理最新区块的分叉。
+
+
+
+
+
+### 有效UTXOs集合
+
+<figure><img src="../.gitbook/assets/IMG_2116.jpeg" alt=""><figcaption></figcaption></figure>
+
+在建立了BTC全链区块头的证明以后，我们可以对所有区块包含的交易进行扫描，分析其输入Inputs UTXO和输出Outputs UTXO。我们可以从创始块开始建立一个“有效UTXO集合“，采用UTreeXO数据结构存储。
+
+从创始块的Coinbase交易开始，作为第一个Input加入到UTreeXO里，其后每个交易的Input都被从UTreeXO中移除，每个交易的Output都被加入到UTreeXO。如此往复循环，将一个区块内所有的交易都过滤一遍之后，UTreeXO的内容就是当前区块结束后最新的未花费的UTXO的集合。
+
+接着再处理第二个区块，第三个区块……，当处理到最新高度以后，我们就可以拥有一个全网未花费的UTXO的集合。并且也同时生成了这个集合的零知识证明。
+
+通过这个集合和证明，我们可以为任何一个UTXO提供其未被花费的证明。我们也可以为不在这个集合的UTXO提供其不存在的证明，从而可以证明其已被花费或者并不存在。
+
+我们还可以通过遍历将属于某个地址的证明收集在一起，为这个地址生成一个BTC余额证明。也可以帮助验证尚处于交易池中的转账使用的UTXO是否有效。
+
+再进一步，如果我们能为BTC上承载的BRC20，RUNS，TAPROOT ASSETS内容也生成证明，我们可以为他们生成专属的UTreeXO集合和证明，这样就不必依赖第三方Indexer即可验证这些衍生协议的转账是否有效，为客户端验证模型提供更高效的技术方案。
+
+
+

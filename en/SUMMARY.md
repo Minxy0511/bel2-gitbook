@@ -2,9 +2,9 @@
 
 * [Introduction](README.md)
   * [Overview](introduction/overview.md)
-  * [TX Proof: zk Proof on Bitcoin](introduction/tx-proof-zk-proof-on-bitcoin.md)
   * [ZK Proof Bitcoin Full Node](introduction/zk-proof-bitcoin-full-node.md)
-  * [Relayers Network](introduction/relayers-network.md)
+  * [Transaction Proof Service Network](introduction/transaction-proof-service-network.md)
+  * [Arbitor Network](introduction/arbitor-network.md)
   * [BeL2 Structure](introduction/bel2-structure.md)
 * [Developer](developer/README.md)
   * [Generate a BTC TX proof](developer/generate-a-btc-tx-proof.md)

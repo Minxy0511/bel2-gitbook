@@ -40,7 +40,7 @@ Based on this technological innovation, BeL2 provides three fundamental services
 
 
 
-### ZKP Full Node
+### ZK Proof Bitcoin Full Node
 
 When synchronizing full node data, nodes only need to synchronize the latest UTXO set state and its ZKP proof, without downloading and verifying all historical block data. This greatly reduces the storage and bandwidth requirements of full nodes, enabling even resource-constrained devices to run a "pruned" version of the Bitcoin full node. In addition to reducing the storage space of nodes, BeL2 can also provide zero-knowledge proofs of address balances. The UTXO set held by an address and its proof can be provided together to the requester, who does not need to use a full node for verification; they only need to verify the proof to trust this information. This enables a trustless BTC RPC node service.
 
