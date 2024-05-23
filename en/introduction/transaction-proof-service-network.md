@@ -1,43 +1,37 @@
-# TX Proof: zk Proof on Bitcoin
+# Transaction Proof Service Network
 
-零知识证明(Zero-Knowledge Proof, ZKP)是一种密码学技术,允许证明者向验证者证明某个陈述是正确的,而无需透露除此之外的任何信息。这意味着证明者可以证明自己知晓某个信息或执行了某个计算,而不必展示实际的数据或详细过程。验证者可以确认计算结果的正确性,而无需重复整个计算过程。
+在通常的BTC应用场景里，比如BTC Wallet，要验证一笔交易是否成功，为了安全起见，用户不会轻易使用第三方的RPC服务返回的信息，而是通过自己搭建的，或者由可信第三方搭建的BTC全节点返回信息来确认交易。当然也可以使用SPV节点在本地验证交易。但无论是全节点还是SPV节点，都需要耗费漫长的同步过程，带宽和本地存储，这对应用场景里的设备和网络环境都提出了不低的要求。
 
-零知识证明的关键在于,它提供了一种方法,使证明者能够构造一个证明,这个证明本身就足以验证某个事实,而不包含任何可以让验证者重构原始信息的额外细节。这意味着不再需要提供复杂冗长的原始数据和过程,证明过程变得高效,无需通过重复所有计算步骤来验证结果。
+所谓全节点，就是指可以在本地，通过同步所有数据，逐条验证以后，得到全网共识后的最新状态集，再基于这个状态集，我们就可以验证一笔新交易的真实性和有效性。
 
-在比特币交易的验证中,需要完成多个关键步骤以确保合法性和安全性,包括验证UTXO的有效性,确认交易签名解锁了相应的UTXO,检查输入总额不小于输出总额,以及验证交易哈希和TXID的一致性等。传统上,这需要运行一个本地的比特币全节点来执行,这对于客户端验证模型来说是个较高的门槛,因为需要大量存储空间和处理能力来维护完整的区块链历史。
+零知识证明技术的特点是，它的电路程序可以像智能合约一样执行规定的计算过程，产生一个结果，并且它可以证明这是完全按照电路程序的指令产生的结果。这个结果可以使用非常简单的数学计算进行验证。如果说Sha256是内容的“指纹”，零知识证明就是计算过程的“指纹”。
 
-零知识证明为这一问题提供了一个优雅的解决方案。通过构建一个模拟比特币共识规则的零知识证明电路,可以在本地节点上完成对交易的初始验证,然后生成一个证明。该证明能够在不透露具体交易细节的情况下,证实上述验证步骤已被正确执行。
+结合零知识证明的这个特点，BeL2采用Cairo语言，按照Bitcoin的共识代码编写验证电路，如果我们可以在一台服务器上对BTC交易完成验证，并生成证明，第三方可以审计BeL2的电路代码是否与Bitcoin的共识一致，如果它们是一致的，逻辑等价的，那么就可以信任BeL2电路产生的证明。第三方拿到这个证明，可以在本地对其进行验证，从而确定这个交易的有效性。
 
-该证明可以发送给第三方,而第三方无需执行整个验证过程就可以信任交易的有效性。得益于零知识证明的安全性,第三方能够确信结果是正确的,而不必访问完整的交易数据或UTXO信息。
+这就好像是BeL2用零知识证明技术为Bitcoin共识生成了一个快照，这个快照可以被验证，任何人无需额外信任即可相信这个快照所代表的BTC共识结果。
 
-这种方法大大降低了参与比特币应用的门槛,因为它消除了运行全节点的需求,提供了一种更加轻量级的验证机制,同时保持了相同级别的信任和安全性。即使是资源受限的设备也能参与验证,而不会泄露隐私或影响安全。零知识证明因此提高了比特币生态的包容性,为轻客户端提供了一种可行的隐私保护方案。
+BeL2基于零知识证明技术提供的交易证明服务包括以下几个部分
 
-在区块链领域,尤其是去中心化金融(DeFi)中,零知识证明为不同区块链之间的隐私保护交互开辟了新的可能性。Cairo语言编写的零知识证明电路与Solidity智能合约的交互就是一个例子。Cairo是专为零知识证明设计的语言,可以生成能够被以太坊等区块链上的智能合约所验证的证明。
+1.  ZKP交易证明服务合约
 
-通过在Solidity合约中集成Cairo电路的输出,我们可以高效验证比特币交易信息。智能合约解析零知识证明提供的输出,并验证这些证明的有效性。这意味着合约可以获得关键的交易数据,如来源地址、接收地址、金额、时间戳、区块高度等。
+    面向第三方提供的验证服务，用户向合约提交请求，服务商看到请求以后可以竞争执行生成证明。服务商提交的证明可以被合约验证，第一个提交有效证明的服务商会得到奖励。
+2.  若干Cairo电路
 
-借助这一机制,开发者可以搭建BTC DeFi应用,而无需直接处理或存储任何私人信息。用户可以提供一个证明自己在比特币网络上执行了某个交易的零知识证明,而不必暴露所有细节。智能合约验证该证明,如果有效,就可以根据交易逻辑执行相应操作,如发放代币、记录债权或触发其他合约函数。
+    为了面向多种场景提供服务，BeL2将BTC交易的验证拆解为多个子电路模块，分别用于验证交易有效性、输入输出UTXO、签名、脚本等等多的方面。可以根据场景的不同，利用递归证明的方式组合这些模块，生成一个压缩的证明用于在合约中验证。
+3.  ZKP服务程序
 
-这种方法不仅增强了交易双方的隐私保护,合约自动化执行也提高了效率和透明度。因此,将零知识证明与智能合约技术相结合,为在保护隐私的同时实现跨链交互铺平了道路,对于推动区块链的互操作性和构建更复杂的DeFi产品具有重要意义。
+    证明服务是一个服务商网络，服务商可以运行BeL2的ZKP服务程序，监听ZKP服务合约中的请求，为用户计算和生成证明，从而获得奖励。这是一个无需准入许可的网络，任何人都可以运行这个服务程序加入进来。同时，只要遵守协议规范，服务商也可以改写和优化服务程序，通过提供更高效的证明生成服务获得奖励。
 
+第三方开发者或者用户可以通过向BeL2验证服务合约提交BTC交易的方式获得其验证结果，第三方dApp可以基于BeL2的ZKP验证服务合约实现主网BTC的交易协议。
 
+让我们以一个主网BTC的SWAP为例来介绍BeL2的ZKP验证服务。
 
-Zero-knowledge proof (ZKP) is a cryptographic technique that allows a prover to demonstrate to a verifier that a statement is true without revealing any information beyond the validity of the statement itself. This means the prover can prove they know a piece of information or have performed a computation without revealing the actual data or detailed process. The verifier can confirm the correctness of the computation result without having to repeat the entire computation process.
+假设Alice想用0.1 BTC兑换Bob的6500 USDC。
 
-The key to zero-knowledge proofs lies in the fact that they provide a way for the prover to construct a proof that is sufficient to verify a fact without including any additional details that would allow the verifier to reconstruct the original information. This implies that complex and lengthy original data and processes no longer need to be provided, making the proving process efficient and eliminating the need to verify results by repeating all computational steps.
+1. Bob先创建一个订单合约，并设置了预期的BTC数量，再存入自己的6500 USDC
+2. Alice看到订单以后，决定接受订单，于是先Take订单，避免其他人也在Take相同的订单
+3. Alice向Bob的地址发送BTC
+4. Alice向BeL2的交易证明服务提交她的BTC交易，并生成证明
+5. Alice向订单合约提交证明，被验证通过以后Alice得到6500 USDC
 
-In the validation of Bitcoin transactions, multiple key steps must be completed to ensure legality and security, including verifying the validity of UTXOs, confirming that transaction signatures unlock the corresponding UTXOs, checking that the total input amount is not less than the total output, and verifying the consistency of the transaction hash and TXID. Traditionally, this requires running a local Bitcoin full node, which is a high barrier for client-side validation models due to the significant storage space and processing power needed to maintain the entire blockchain history.
-
-Zero-knowledge proofs offer an elegant solution to this problem. By constructing a zero-knowledge proof circuit that mimics Bitcoin's consensus rules, initial transaction validation can be performed on a local node, followed by the generation of a proof. This proof can demonstrate that the aforementioned validation steps have been executed correctly without revealing specific transaction details.
-
-The proof can be sent to a third party, who can trust the validity of the transaction without executing the entire verification process. Thanks to the security of zero-knowledge proofs, the third party can be confident that the result is correct without accessing complete transaction data or UTXO information.
-
-This approach greatly lowers the barrier to participating in Bitcoin applications, as it eliminates the need to run a full node and provides a more lightweight verification mechanism while maintaining the same level of trust and security. Even resource-constrained devices can participate in validation without compromising privacy or security. Zero-knowledge proofs thus increase the inclusivity of the Bitcoin ecosystem and offer a viable privacy-preserving solution for light clients.
-
-In the realm of blockchain, particularly in decentralized finance (DeFi), zero-knowledge proofs open up new possibilities for privacy-preserving interactions between different blockchains. The interaction between zero-knowledge proof circuits written in Cairo and Solidity smart contracts is one example. Cairo is a language designed specifically for zero-knowledge proofs, capable of generating proofs that can be verified by smart contracts on blockchains like Ethereum.
-
-By integrating the output of Cairo circuits into Solidity contracts, we can efficiently verify Bitcoin transaction information. The smart contract parses the output provided by the zero-knowledge proof and verifies the validity of these proofs. This means the contract can obtain key transaction data such as source address, destination address, amount, timestamp, block height, etc.
-
-With this mechanism, developers can build BTC DeFi applications without directly handling or storing any private information. Users can provide a zero-knowledge proof demonstrating that they have executed a transaction on the Bitcoin network without exposing all the details. The smart contract verifies the proof and, if valid, can execute corresponding actions based on the transaction logic, such as issuing tokens, recording debts, or triggering other contract functions.
-
-This approach not only enhances privacy protection for both parties in a transaction but also improves efficiency and transparency through the automated execution of contracts. Therefore, combining zero-knowledge proofs with smart contract technology paves the way for cross-chain interactions while preserving privacy, which is crucial for advancing blockchain interoperability and building more complex DeFi products.
+通过这个例子我们可以看到，基于BeL2的交易证明，Alice可以自助换取EVM链上的USDC。开发者可以在更多的场景里使用它。

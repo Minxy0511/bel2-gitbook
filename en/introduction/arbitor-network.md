@@ -1,45 +1,80 @@
-# Relayers Network
+# Arbitor Network
 
-BeL2的Relayer Network在解决比特币(BTC)资产托管问题上有着独特的优势和创新之处。与传统的多签、门限签名和MPC钱包等方案不同,BeL2引入了一种基于比特币交易证明机制和智能合约的资产托管模式,实现了更高程度的无需信任和无需许可。
+BeL2可以为BTC交易生成零知识证明，既可以在合约里验证它的真伪，获知发生了某个交易，也可以通过证明了解交易的具体内容。这就让我们可以实现一个“监督”智能合约。如果某个我们关注的BTC地址发生了关联交易，通过为它生成一个ZKP并传递到合约即可让合约感知到它。这时合约就可以根据预定的业务逻辑和协议对这个交易进行判断，符合预期或者超出预期。
 
-在BeL2的Relayer Network中,签名人(Relayer)通过质押Restaking项目的资产作为抵押品,参与到不同项目的交易签名过程中。这种质押机制有效地激励了签名人诚实行事,避免了因作恶而导致质押资产被罚没的风险。同时,签名人并不直接管理BTC资产,而是根据具体交易的需要,由交易参与者选择少数签名人提供签名服务。这种分散化的签名机制降低了签名人合谋作恶的可能性。
+众所周知，在不扩展BTC的前提下，目前还没有好的办法实现完全去中心的方式托管BTC。虽然BitVM提出了一个非常有创意的解决方案，但距离可用还有很远一段路。如何让BTC变得可以被智能托管，用于借贷、稳定币和跨链桥等场景，这是社区一直期待和寻找的。
 
-此外,BeL2引入了一种盲签机制,签名人对交易的具体内容并不知情。他们只需对合约事件进行签名并发布,而不清楚这些签名最终会被用于哪些交易。这进一步增强了签名人的中立性和安全性。
+所以，多签或者原理上类似多签的方式是目前被广泛采用的一种BTC托管方案。可以把它当作一种“半信任”的解决方案，虽然引入了托管人，但通过分散权力、治理和监督等机制，让作恶的成本更高了，从而在一定程度上保障了安全。
 
-基于BeL2的比特币交易证明机制,用户可以轻松地为作恶交易生成证明,并将其提交到智能合约。合约可以快速验证作恶行为,并立即对作恶的签名人进行惩罚,同时将罚没的资产补偿给受害者。这种自动化的作恶证明验证和惩罚机制,大大提高了资产托管的安全性和效率。
+但由于资金被集中托管，运转流程过长，不够透明等等原因，让这种托管方案很难赢得大多数BTC Holder的信任。而且一旦达到一定人数的托管人作恶，就可能造成损失。
 
-BeL2的智能合约还为应用设计博弈机制提供了便利。开发者可以根据具体业务需求,灵活设计激励和惩罚规则,充分利用智能合约的可编程性,扩展比特币的应用场景。
+为了改进多签的方案，也有一些项目引入质押，让托管人必须质押资产，甚至是项目方代币。包括一些基于BitVM的项目也是如此，通过罚没作恶者的BTC来约束托管人。这里的新问题是，如何挑战证明作恶？如何惩罚作恶者？如何补偿受损失的用户？这一切必须简单、快速、高效，而不应该是一个漫长而又不明确的过程。
 
-总的来说,BeL2的Relayer Network通过创新的资产托管模式,解决了比特币二层项目和侧链项目面临的共同难题。其优点和特点包括:
+BeL2可以改进对托管人的监督问题，通过创新的零知识证明和智能合约可以监督托管人的行为，并要求托管人在合约中质押资产担保其行为。如果托管人有作恶行为，受害者或者任何人都可以通过将作恶交易/签名生成ZKP提交到合约对其发起挑战，合约可以立即对其行为进行判断，如果挑战成功就可以对作恶的托管人进行惩罚，并将其资产补偿给受害者，以及奖励挑战者。
 
-1. 高度的无需信任和无需许可,减少了对中心化托管方的依赖。
-2. 通过质押机制和盲签机制,有效激励签名人诚实行事,降低作恶风险。
-3. 自动化的作恶证明验证和惩罚,提高了资产托管的安全性和效率。
-4. 基于智能合约的博弈机制设计,扩展了比特币的编程模型和应用场景。
-5. 分散化的签名机制,降低了签名人合谋作恶的可能性。
+同时，BeL2支持托管人使用Restaking资产。这意味着托管人不必损失原生资产的流动性和潜在收益，让一份已经失去流动性的资产再次发挥作用。它的作用不是用于被其他人借走，而是用于对自身行为的担保，这就只需要质押者提供的是有价值的资产即可，而不必是高流动性的资产。
 
-BeL2的Relayer Network为比特币资产托管提供了一种全新的解决方案,有望成为未来比特币二层项目和侧链项目的重要基础设施。它的出现将进一步推动比特币生态系统的发展,为更多创新应用的诞生提供了可能。
+因此，通过BeL2+Restaking的组合，可以更好地降低由于引入托管人管理BTC所带来的潜在风险。
 
+在实际项目案例中，为了进一步降低托管人的风险，往往会在以下三个方面进行改进
 
+1. 增加托管人的质押、监督和惩罚机制，制衡他的权力。即使作恶，也会让其付出代价，让受害者得到补偿。
+2. 减少托管人的权限，使其无法单独、随意支配资产，只能对利益相关方提出的支配资产的请求进行确认，辅助其完成BTC的提取。
+3. 减少托管人与利益相关方的交互，从信息渠道上尽量隔离两者使其难以共谋。
 
+基于BeL2的监督机制可以快速、低成本地实现第一点。dApp在设计协议时，应遵循第二点设计原则，让托管人不能全权处置资产，而是一个“裁判员”，只对利益相关者（终端用户）的请求进行支持或者反对。尽量少使用“裁判员”，而更多是在利益相关者之间博弈，只有出现争议时，再引入“裁判员”帮助协议执行约定的操作。这样，“裁判员”的主要作用是让dApp的协议可以被“强制执行”，不会由于交易双方的争议或者不配合而导致交易被阻断。同时dApp的协议可以设计惩罚，当“裁判员”介入以后，要对不配合的一方进行一定程度的惩罚，从而威慑交易参与者，使其积极参与交易。
 
+当“裁判员”只是作为一种威慑存在时，这样既减少了“裁判员”参与的机会，降低了作恶风险，同时也降低了dApp的运行成本。
 
-BeL2's Relayer Network has unique advantages and innovations in solving the problem of Bitcoin (BTC) asset custody. Unlike traditional multi-signature, threshold signature, and MPC wallet solutions, BeL2 introduces an asset custody model based on Bitcoin transaction proof mechanisms and smart contracts, achieving a higher degree of trustlessness and permissionlessness.
+在一个生态系统里可能存在多个dApp都需要“裁判员”帮助其执行协议，那么就可以建议这样一个公共的Arbitor网络来帮助生态里的dApp。这些Arbitor是“职业裁判员”，他们只是接收dApp的签名请求，通过签名BTC交易使的dApp中的交易可以被强制执行。
 
-In BeL2's Relayer Network, signers (Relayers) participate in the transaction signing process of different projects by pledging assets from the Restaking project as collateral. This staking mechanism effectively incentivizes signers to act honestly, avoiding the risk of losing staked assets due to malicious behavior. At the same time, signers do not directly manage BTC assets; instead, they are selected by transaction participants to provide signing services based on the specific needs of each transaction. This decentralized signing mechanism reduces the possibility of signers colluding to act maliciously.
+BeL2的Arbitor网络包括三部分组成：Arbitor合约，Arbitor服务，交易证明服务网络
 
-Moreover, BeL2 introduces a blind signing mechanism where signers are unaware of the specific contents of the transactions. They only need to sign and publish contract events without knowing which transactions these signatures will ultimately be used for. This further enhances the neutrality and security of the signers.
+* Arbitor合约
+  * Arbitor注册
+  * 质押资产
+  * Arbitor退出
+  * 提交作恶证明挑战Arbitor，以及惩罚和获得补偿
+  * 注册dApp
+  * 注册需要被监督的交易
+  * 请求签名
+  * 提交签名
+* Arbitor服务
+  * 监听Arbitor合约中的签名请求，并进行签名
+  * 提交签名
+* 交易证明服务网络
+  * 为挑战者提供的BTC交易生成零知识证明
 
-Based on BeL2's Bitcoin transaction proof mechanism, users can easily generate proofs for malicious transactions and submit them to smart contracts. The contracts can quickly verify malicious behavior and immediately punish the malicious signers while compensating the victims with the confiscated assets. This automated malicious behavior proof verification and punishment mechanism greatly improves the security and efficiency of asset custody.
+让我们以一个BTC借贷为例来介绍BeL2的Arbitor网络。
 
-BeL2's smart contracts also provide convenience for designing game-theoretic mechanisms in applications. Developers can flexibly design incentive and punishment rules according to specific business requirements, fully utilizing the programmability of smart contracts to expand Bitcoin's application scenarios.
+假设BTC的持有者Alice想要通过质押1个BTC来获得Bob提供的30K USDC的贷款。那么这个BTC Loan dApp的工作流程如下
 
-Overall, BeL2's Relayer Network solves the common challenges faced by Bitcoin layer-2 projects and sidechain projects through an innovative asset custody model. Its advantages and features include:
+1. Bob创建一个提供贷款的订单，也就是创建一个订单合约，在其中设置了他预期的最大借款时间，借款数量，利息，Bob的BTC收款地址等等信息，并将30K USDC存入其中。
+2. Alice看到Bob的订单以后，认为其满足她的需求，所以就take了Bob的订单，并提交了她的BTC收款地址等信息。
+3. BTC Loan dApp根据双方的地址和订单中的信息，为双方生成一个BTC锁定脚本和脚本地址，通过这个脚本锁定Alice的质押，如果Alice正常还款，她可以从脚本中解锁被质押的BTC。如果Alice没有及时还款，Bob将可以解锁被质押的BTC作为补偿。
+4. 在生成锁定脚本的同时，BTC Loan dApp也向BeL2的Arbitor合约注册了这个交易的信息，使其可以监督这个交易的执行。
+5. Alice将1个BTC发送到订单合约提供的锁定脚本的地址。
+6. Bob确认BTC已经被锁定。（如果Bob不确认，Alice可以通过BeL2的ZKP服务生成锁定交易的证明提交到订单合约，代替Bob进行确认）
+7. Alice可以从订单合约中借走30K USDC。
 
-1. High degree of trustlessness and permissionlessness, reducing reliance on centralized custodians.
-2. Effective incentivization of honest behavior among signers through staking and blind signing mechanisms, reducing the risk of malicious actions.
-3. Automated malicious behavior proof verification and punishment, improving the security and efficiency of asset custody.
-4. Game-theoretic mechanism design based on smart contracts, expanding Bitcoin's programming model and application scenarios.
-5. Decentralized signing mechanism, reducing the possibility of signers colluding to act maliciously.
+BTC Loan dApp的设计遵循前面提到的原则：减少托管人的权限，使其无法单独、随意支配资产，只能对利益相关方提出的支配资产的请求进行确认，辅助其完成BTC的提取。
 
-BeL2's Relayer Network provides a new solution for Bitcoin asset custody and is expected to become an important infrastructure for future Bitcoin layer-2 projects and sidechain projects. Its emergence will further promote the development of the Bitcoin ecosystem, providing possibilities for the birth of more innovative applications.
+在这个借款交易中，Alice和Bob是利益相关方，BeL2的Arbitor是监督者，所以，BTC Loan dApp的锁定脚本被设计了三种解锁方式
+
+1. Alice和Bob共同签名解锁BTC
+2. 借款到期以后，Bob可以单独签名解锁BTC
+3. Alice和Arbitor共同签名解锁BTC
+
+第一种解锁方式是在Alice正常还款以后，Bob配合Alice共同完成了解锁BTC的操作，这是一种互相配合的结果，是我们预期的大多数情况。
+
+第二种解锁方式是在Alice一直不归还借款，直到借款最后到期时间以后，Bob可以解锁BTC作为补偿。
+
+第三种解锁方式是在Alice按时归还借款以后，如果Bob不配合签名解锁BTC的时候，由Arbitor协助签名解锁BTC。这种情况下要对Bob进行惩罚，避免其心存侥幸想要恶意占有Alice的BTC。
+
+Alice和Bob是这个借款交易博弈的两个相关者。如果Alice违约，在超时以后，Bob可以拿走BTC作为补偿。如果Bob违约，不配合退还BTC，那么Alice可以通过BTC Loan dApp发起仲裁请求，将解锁BTC的交易提交到Arbitor合约，Arbitor网络上的Arbitor们会对交易进行签名并广播，从而强制解锁BTC退回给Alice。
+
+如果Arbitor与Alice合谋作恶，Alice并没有还款，Arbitor却还是私下里提供签名（正常来说，BTC Loan dApp应该可以判断Alice是否还款，在没有还款的情况下dApp不会允许向Arbitor合约发起仲裁请求）解锁了BTC。Bob或者其他监督者发现了这笔解锁交易，他们可以为这笔不正常的解锁交易生成零知识证明，并提交到Arbitor合约中对签名的Arbitor发起挑战，被验证以后，Arbitor将被惩罚，Bob可以从Arbitor合约获得补偿。
+
+从这个BTC借贷的例子里，我们可以看到BeL2的Arbitor不是交易的参与者，与交易双方没有利益冲突，只是作为一个利益无关的第三方针对仲裁请求进行签名，他不需要关心交易的内容，不需要关心双方谁对谁错，只要dApp的协议请求签名，他就完成签名。它只是帮助协议执行“BTC签名”操作。补充智能合约无法直接操作BTC这个能力。
+
+并且，如果第三方dApp的设计合理的话，因为Arbitor的存在，可以威慑交易参与者必须遵守协议，那么在大多数情况下，可能都不需要Arbitor参与即可让Alice和Bob顺利完成交易。

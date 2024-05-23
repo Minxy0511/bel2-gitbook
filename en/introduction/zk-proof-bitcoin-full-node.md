@@ -1,6 +1,6 @@
 # ZK Proof Bitcoin Full Node
 
-BeL2最初受到ZeroSync的启发，实现ZK Full Node就是ZeroSync提出的目标，但它止步于区块头的验证。BeL2可以看作是ZeroSync的延续，BeL2使用Cairo(1)，从分析和证明交易的内容开始，再结合区块头的验证，最终实现全链的证明。这样，对于一个BTC Full Node而言，它不必存储高达500G的历史数据，只需要保存有效的UTXO集合，即便分享信息给其它访问者，也可以通过提供零知识证明的方式证明其提供的数据的真实性。这相比于现有的BTC RPC服务来说，是一个巨大的进步，因为它是无需信任的。可以通过证明自证清白。
+BeL2最初受到ZeroSync的启发，ZeroSync提出了实现ZK Full Node的目标，但它止步于区块头的验证。BeL2可以看作是ZeroSync的延续，BeL2使用Cairo(1)，从分析和证明交易的内容开始，再结合区块头的验证，最终实现全链的证明。这样，对于一个BTC Full Node而言，它不必存储高达500G的历史数据，只需要保存有效的UTXO集合，即便分享信息给其它访问者，也可以通过提供零知识证明的方式证明其提供的数据的真实性。这相比于现有的BTC RPC服务来说，是一个巨大的进步，因为它是无需信任的。可以通过证明自证清白。
 
 
 
@@ -33,7 +33,7 @@ BeL2针对每项内容进行验证和证明，再将所有证明递归合并为�
 
 区块头的证明采用类似ZeroSync的机制，将多个区块头合并处理，经过多次批量验证，将所有被验证的区块头汇总为一条前后关联的链式结构，并生成对应的证明。当需要验证任何一个区块时，只要证明在这个链式结构里，即可为其生成一个“链上证明”，并且还可以通过计算其后包含多少个后续区块来得到这个区块已有了几次确认。
 
-<figure><img src="../.gitbook/assets/IMG_2113.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/IMG_2113.jpeg" alt="" width="375"><figcaption></figcaption></figure>
 
 针对区块头的验证，包括区块Hash的计算，前后区块关联Hash的验证，前后算力难度值的验证，以及处理最新区块的分叉。
 
@@ -43,7 +43,7 @@ BeL2针对每项内容进行验证和证明，再将所有证明递归合并为�
 
 ### 有效UTXOs集合
 
-<figure><img src="../.gitbook/assets/IMG_2116.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/IMG_2116.jpeg" alt="" width="375"><figcaption></figcaption></figure>
 
 在建立了BTC全链区块头的证明以后，我们可以对所有区块包含的交易进行扫描，分析其输入Inputs UTXO和输出Outputs UTXO。我们可以从创始块开始建立一个“有效UTXO集合“，采用UTreeXO数据结构存储。
 
